@@ -152,3 +152,8 @@ for fold_n, (train_index, valid_index) in enumerate(folds.split(X_train_scaled))
     
 prediction /= n_fold
 print('CV mean score: {0:.4f}, std: {1:.4f}.'.format(np.mean(scores), np.std(scores)))
+
+submission['time_to_failure'] = (prediction)
+# submission['time_to_failure'] = prediction_lgb_stack
+print(submission.head())
+submission.to_csv('submission.csv')
