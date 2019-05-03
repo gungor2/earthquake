@@ -51,7 +51,7 @@ for segment in range(segments):
     
     mfcc_feat = np.delete(mfcc_feat, 0, 0)
     print(mfcc_feat)
-    mfcc_feat = mfcc.reshape(-1)
+    mfcc_feat = mfcc_feat.reshape(-1)
 
 #    fbank_feat = logfbank(x,fs)
 #    
@@ -87,7 +87,7 @@ for i, seg_id in enumerate((X_test.index)):
     
     mfcc_feat = np.delete(mfcc_feat, 0, 0)
     print(mfcc_feat)
-    mfcc_feat = mfcc.reshape(-1)
+    mfcc_feat = mfcc_feat.reshape(-1)
 
 #    fbank_feat = logfbank(x,fs)
 #    
