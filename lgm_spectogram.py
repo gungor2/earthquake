@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Fri May  3 11:47:44 2019
+
+@author: gungor2
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Thu May  2 16:45:28 2019
 
 @author: gungor2
@@ -11,11 +18,13 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import KFold
 import lightgbm as lgb
 from lightgbm import LGBMModel,LGBMClassifier
+from scipy import signal
+
 
 np.random.seed(444)
 
 train = pd.read_csv('./LANL-Earthquake-Prediction/train.csv', dtype={'acoustic_data': np.int16, 'time_to_failure': np.float32})
-print('erman')
+
 rows = 150000
 segments = int(np.floor(train.shape[0] / rows))
 
@@ -24,21 +33,22 @@ X_tr = pd.DataFrame(index=range(segments), dtype=np.float64)
 
 y_tr = pd.DataFrame(index=range(segments), dtype=np.float64, columns=['time_to_failure'])
 
-
+fs = 4*10**6
 for segment in range(segments):
     seg = train.iloc[segment*rows:segment*rows+rows]
     x = pd.Series(seg['acoustic_data'].values)
-    y = seg['time_to_failure'].values[-1]
+    f, t, Sxx = signal.spectrogram(x,fs)
+    sxx = Sxx.reshape(-1)
+    
+    for j in range(len(sxx)):
+        X_tr.loc[segment, 'f' + str(j)] = sxx[j]
+        
+        
+    y = np.mean(seg['time_to_failure'].values)
     
     y_tr.loc[segment, 'time_to_failure'] = y
-    X_tr.loc[segment, 'mean'] = x.mean()
-    X_tr.loc[segment, 'std'] = x.std()
-    X_tr.loc[segment, 'max'] = x.max()
-    X_tr.loc[segment, 'min'] = x.min()
     
-    X_tr.loc[segment, 'mean_change_abs'] = np.mean(np.diff(x))
-    X_tr.loc[segment, 'abs_max'] = np.abs(x).max()
-    X_tr.loc[segment, 'abs_min'] = np.abs(x).min()
+    
     
     
 scaler = StandardScaler()
@@ -54,30 +64,16 @@ for i, seg_id in enumerate((X_test.index)):
     seg = pd.read_csv('./LANL-Earthquake-Prediction/test/' + seg_id + '.csv')
     
     x = pd.Series(seg['acoustic_data'].values)
-    X_test.loc[seg_id, 'mean'] = x.mean()
-    X_test.loc[seg_id, 'std'] = x.std()
-    X_test.loc[seg_id, 'max'] = x.max()
-    X_test.loc[seg_id, 'min'] = x.min()
-        
-    X_test.loc[seg_id, 'mean_change_abs'] = np.mean(np.diff(x))
-    X_test.loc[seg_id, 'abs_max'] = np.abs(x).max()
-    X_test.loc[seg_id, 'abs_min'] = np.abs(x).min()
+    
+    f, t, Sxx = signal.spectrogram(x,fs)
+    sxx = Sxx.reshape(-1)
+    
+    for j in range(len(sxx)):
+        X_test.loc[segment, 'f' + str(j)] = sxx[j]
 
 
-means_dict = {}
-for col in X_tr.columns:
-    if X_tr[col].isnull().any():
-        print(col)
-        mean_value = X_tr.loc[X_tr[col] != -np.inf, col].mean()
-        X_tr.loc[X_tr[col] == -np.inf, col] = mean_value
-        X_tr[col] = X_tr[col].fillna(mean_value)
-        means_dict[col] = mean_value
-        
-        
-for col in X_test.columns:
-    if X_test[col].isnull().any():
-        X_test.loc[X_test[col] == -np.inf, col] = means_dict[col]
-        X_test[col] = X_test[col].fillna(means_dict[col])
+
+
         
 X_test_scaled = pd.DataFrame(scaler.transform(X_test), columns=X_test.columns)
 
@@ -100,8 +96,8 @@ params = {'num_leaves': 128,
           'max_depth': -1,
           'learning_rate': 0.01,
           "boosting": "gbdt",
-          "bagging_freq": 5,
-          "bagging_fraction": 0.8126672064208567,
+          "bagging_freq": 1,
+          "bagging_fraction": 0.75,
           "bagging_seed": 11,
           "metric": 'mae',
           "verbosity": -1,
