@@ -40,7 +40,7 @@ def create_cnn(width, height, depth, filters=(16, 32, 64), regress=False):
 			x = inputs
 
 		# CONV => RELU => BN => POOL
-        x = MaxPooling2D(pool_size=(2, 2))(x)
+		x = MaxPooling2D(pool_size=(2, 2))(x)
 		x = Conv2D(f, (5, 5), padding="same")(x)
 		x = Activation("relu")(x)
 		x = BatchNormalization(axis=chanDim)(x)
