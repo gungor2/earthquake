@@ -57,6 +57,11 @@ for segment in range(segments):
     f, t, Sxx = signal.spectrogram(x,fs)
     b = Sxx.reshape((129,669,1))
     images.append(b)
+        
+    y = np.mean(seg['time_to_failure'].values)
+    
+    y_tr.loc[segment, 'time_to_failure'] = y
+
 
 images = np.asarray(images)
 maxx_val = np.max(images)
@@ -77,10 +82,6 @@ for i, seg_id in enumerate((submission.index)):
     
     b = Sxx.reshape((129,669,1))
     images_test.append(b)
-    
-    y = np.mean(seg['time_to_failure'].values)
-    
-    y_tr.loc[segment, 'time_to_failure'] = y
 
 images_test = np.asarray(images_test)    
 
@@ -103,7 +104,7 @@ testY = testAttrX['time_to_failure'] / maxPrice
 # using mean absolute percentage error as our loss, implying that we
 # seek to minimize the absolute percentage difference between our
 # price *predictions* and the *actual prices*
-model = models.create_cnn(64, 64, 1, regress=True)
+model = models.create_cnn(669, 129, 1, regress=True)
 opt = Adam(lr=1e-3, decay=1e-3 / 200)
 model.compile(loss="mean_absolute_percentage_error", optimizer=opt)
 
