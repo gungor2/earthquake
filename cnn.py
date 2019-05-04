@@ -39,7 +39,7 @@ from scipy import signal
 #images = images / 255.0
 
 
-train = pd.read_csv('./LANL-Earthquake-Prediction/train.csv', dtype={'acoustic_data': np.int16, 'time_to_failure': np.float32})
+train = pd.read_csv('./LANL-Earthquake-Prediction/train.csv', dtype={'acoustic_data': np.int16, 'time_to_failure': np.float32},nrows = 15000000)
 
 
 
@@ -90,7 +90,7 @@ images_test= images_test/maxx_val
 
 # partition the data into training and testing splits using 75% of
 # the data for training and the remaining 25% for testing
-split = train_test_split(y_tr,images, test_size=0.25, random_state=42)
+split = train_test_split(y_tr,images, test_size=0.8, random_state=42)
 (trainAttrX, testAttrX,trainImagesX, testImagesX) = split
 
 # find the largest house price in the training set and use it to
@@ -111,7 +111,7 @@ model.compile(loss="mean_absolute_percentage_error", optimizer=opt)
 # train the model
 print("[INFO] training model...")
 model.fit(trainImagesX, trainY, validation_data=(testImagesX, testY),
-	epochs=100, batch_size=50)
+	epochs=1, batch_size=5)
 
 # make predictions on the testing data
 print("[INFO] predicting house prices...")
@@ -135,7 +135,7 @@ print("[INFO] mean: {:.2f}%, std: {:.2f}%".format(mean, std))
 
 prediction = model.predict(images_test)
 
-submission = pd.DataFrame({'time_to_failure':prediction})
+submission = pd.DataFrame({'time_to_failure':[prediction]})
 # submission['time_to_failure'] = prediction_lgb_stack
 print(submission.head())
 submission.to_csv('submission.csv')
