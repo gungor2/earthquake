@@ -111,7 +111,7 @@ model.compile(loss="mean_absolute_percentage_error", optimizer=opt)
 # train the model
 print("[INFO] training model...")
 model.fit(trainImagesX, trainY, validation_data=(testImagesX, testY),
-	epochs=200, batch_size=8)
+	epochs=100, batch_size=50)
 
 # make predictions on the testing data
 print("[INFO] predicting house prices...")
@@ -135,7 +135,7 @@ print("[INFO] mean: {:.2f}%, std: {:.2f}%".format(mean, std))
 
 prediction = model.predict(images_test)
 
-submission['time_to_failure'] = (prediction)
+submission = pd.DataFrame({'time_to_failure':prediction})
 # submission['time_to_failure'] = prediction_lgb_stack
 print(submission.head())
-submission.to_csv('submission_cnn.csv')
+submission.to_csv('submission.csv')
